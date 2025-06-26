@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EduDoc PDF Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: url("backgrnd03.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      color: white;
+    }
+
+    .pdf-main-container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(7px);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+      padding: 4rem 2rem 2.5rem 2rem;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .pdf-main-container:hover {
+      transform: scale(1.01);
+      box-shadow: 0 12px 45px rgba(255, 255, 255, 0.5);
+    }
+
+    h2 {
+      color: #ff3333;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+      text-align: center;
+    }
+
+    form {
+      width: 100%;
+    }
+
+    .page-section {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      padding: 1rem;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      text-align: left;
+      width: calc(100% - 20px);
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+
+    .page-section h3 {
+      color: #f0f0f0;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .remove-page-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .remove-page-btn:hover {
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      width: calc(100% - 20px);
+      padding: 0.75rem;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.8);
+      color: #333;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: 2px solid #4f46e5;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    small {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.85rem;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #4f46e5, #3b82f6);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #4338ca, #2563eb);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+    }
+
+    button[type="reset"] {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    button[type="reset"]:hover {
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5);
+    }
+
+    .green-btn {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+
+    .green-btn:hover {
+      background: linear-gradient(135deg, #15803d, #166534);
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.5);
+    }
+  </style>
+
+  <script>
+    let pageCount = 1;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      addNewPage(false);
+    });
+
+    function addNewPage(addRemoveButton = true) {
+      const form = document.querySelector('form');
+      const newPageSection = document.createElement('div');
+      newPageSection.classList.add('page-section');
+      newPageSection.id = `page-section-${pageCount}`;
+
+      let removeButtonHtml = '';
+      if (addRemoveButton) {
+        removeButtonHtml = `<button type="button" class="remove-page-btn" onclick="removePage(${pageCount})">Remove</button>`;
+      }
+
+      newPageSection.innerHTML = `
+        ${removeButtonHtml}
+        <h3>Page ${pageCount}</h3>
+        <input type="text" name="pageTitles" placeholder="Page Title (Page ${pageCount})"><br>
+        <textarea name="pageContents" rows="10" placeholder="Enter content for Page ${pageCount}..." required></textarea>
+        <small>Use ### for main heading, ## for subheading, .. for bullet points.</small>
+      `;
+
+      const passwordInput = form.querySelector('input[name="password"]');
+      const submitButton = form.querySelector('button[type="submit"]');
+
+      if (passwordInput) {
+        form.insertBefore(newPageSection, passwordInput);
+      } else if (submitButton) {
+        form.insertBefore(newPageSection, submitButton);
+      } else {
+        form.appendChild(newPageSection);
+      }
+
+      pageCount++;
+    }
+
+    function removePage(pageNumber) {
+      const pageToRemove = document.getElementById(`page-section-${pageNumber}`);
+      if (pageToRemove) {
+        pageToRemove.remove();
+      }
+    }
+
+    document.querySelector('button[type="reset"]').addEventListener('click', function(event) {
+      event.preventDefault();
+      const pageSections = document.querySelectorAll('.page-section');
+      for (let i = pageSections.length - 1; i >= 1; i--) {
+        pageSections[i].remove();
+      }
+      const firstPageSection = document.getElementById('page-section-1');
+      if (firstPageSection) {
+        firstPageSection.querySelector('input[name="pageTitles"]').value = '';
+        firstPageSection.querySelector('textarea[name="pageContents"]').value = '';
+      }
+      const passwordInput = document.querySelector('input[name="password"]');
+      if (passwordInput) {
+        passwordInput.value = '';
+      }
+      pageCount = 2;
+    });
+  </script>
+</head>
+<body>
+  <div class="pdf-main-container">
+    <h2>Faculty PDF Generator</h2>
+    <form action="pdfgenserv" method="POST">
+      <input type="password" name="password" placeholder="Optional PDF Password"><br>
+      <button type="submit">Generate PDF</button>
+      <button type="reset">Clear</button>
+      <button type="button" class="green-btn" onclick="addNewPage(true)">Add New Page</button>
+    </form>
+  </div>
+</body>
+</html>
